@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir -p temp
 cd ./temp
 
@@ -13,7 +15,7 @@ cd build
 cmake ..
 make -j4
 sudo make install
-make clean
+sudo ldconfig
 
 cd ../../..
 sudo rm -rf temp
