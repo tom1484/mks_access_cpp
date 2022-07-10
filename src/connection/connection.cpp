@@ -1,11 +1,11 @@
 #include "connection.hpp"
 
 
-void Connection::initialize(const std::string url) {
+void Connection::initialize(const std::string _baseUrl) {
     curlpp::initialize();
 
     // set base url string
-    baseUrl = url.back() != '/' ? url + '/' : url;
+    baseUrl = _baseUrl.back() != '/' ? _baseUrl + '/' : _baseUrl;
 
     // set HTTP header
     std::list<std::string> header = {

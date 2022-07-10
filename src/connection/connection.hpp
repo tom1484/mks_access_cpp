@@ -15,7 +15,7 @@ class Connection {
 
 public:
 
-    void initialize(const std::string url);
+    void initialize(const std::string _baseUrl);
 
     Json::Value sendUpdateRequest(const std::string RFID, const std::string timestamp);
     Json::Value sendRegisterRequest(const std::string RFID, const std::string studentID, const std::string timestamp);
