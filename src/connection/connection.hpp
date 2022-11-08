@@ -11,23 +11,12 @@
 #include <curlpp/Options.hpp>
 
 
-class Connection {
-
-public:
+namespace Connection {
 
     void initialize(const std::string _baseUrl);
 
     Json::Value sendUpdateRequest(const std::string RFID, const std::string timestamp);
     Json::Value sendRegisterRequest(const std::string RFID, const std::string studentID, const std::string timestamp);
-
-private:
-
-    curlpp::Easy request;
-
-    std::string baseUrl;
-    std::stringstream resultStream;
-
-    Json::Value parseResult();
 
 };
 
