@@ -1,7 +1,7 @@
 #include "connection.hpp"
 
-
-namespace Connection {
+namespace Connection
+{
 
     curlpp::Easy request;
 
@@ -10,7 +10,8 @@ namespace Connection {
 
     Json::Value parseResult();
 
-    void initialize(const std::string _baseUrl) {
+    void initialize(std::string _baseUrl)
+    {
 
         curlpp::initialize();
 
@@ -20,17 +21,16 @@ namespace Connection {
         // set HTTP header
         std::list<std::string> header = {
             "Content-Type: application/json",
-            "accept: application/json"
-        };
+            "accept: application/json"};
         request.setOpt(new curlpp::options::HttpHeader(header));
 
         // set request result data stream
         curlpp::options::WriteStream ws(&resultStream);
         request.setOpt(ws);
-
     }
 
-    Json::Value sendUpdateRequest(const std::string RFID, const std::string timestamp) {
+    Json::Value sendUpdateRequest(std::string RFID, std::string timestamp)
+    {
 
         // set url route
         std::string registerUrl = baseUrl + "update";
@@ -38,10 +38,10 @@ namespace Connection {
 
         // set JSON data
         char query[100];
-        const char format[100] = 
+        const char format[100] =
             "{"
-                "\"RFID\": \"%s\", "
-                "\"timestamp\": \"%s\""
+            "\"RFID\": \"%s\", "
+            "\"timestamp\": \"%s\""
             "}";
         std::sprintf(query, format, RFID.c_str(), timestamp.c_str());
         request.setOpt(new curlpp::options::PostFields(std::string(query)));
@@ -52,7 +52,8 @@ namespace Connection {
         return parseResult();
     }
 
-    Json::Value sendRegisterRequest(const std::string RFID, const std::string studentID, const std::string timestamp) {
+    Json::Value sendRegisterRequest(std::string RFID, std::string studentID, std::string timestamp)
+    {
 
         // set url route
         std::string registerUrl = baseUrl + "register";
@@ -60,11 +61,11 @@ namespace Connection {
 
         // set JSON data
         char query[100];
-        const char format[100] = 
+        const char format[100] =
             "{"
-                "\"RFID\": \"%s\", "
-                "\"studentID\": \"%s\", "
-                "\"timestamp\": \"%s\""
+            "\"RFID\": \"%s\", "
+            "\"studentID\": \"%s\", "
+            "\"timestamp\": \"%s\""
             "}";
         std::sprintf(query, format, RFID.c_str(), studentID.c_str(), timestamp.c_str());
         request.setOpt(new curlpp::options::PostFields(std::string(query)));
@@ -75,7 +76,8 @@ namespace Connection {
         return parseResult();
     }
 
-    Json::Value parseResult() {
+    Json::Value parseResult()
+    {
 
         std::string jsonRaw;
 
@@ -85,7 +87,8 @@ namespace Connection {
         builder["collectComments"] = true;
         JSONCPP_STRING errs;
 
-        if (!parseFromStream(builder, resultStream, &resultJson, &errs)) {
+        if (!parseFromStream(builder, resultStream, &resultJson, &errs))
+        {
             std::cout << errs << std::endl;
         }
 
@@ -93,4 +96,3 @@ namespace Connection {
     }
 
 };
-

@@ -1,3 +1,6 @@
+#ifndef CONNECTION_HPP_
+#define CONNECTION_HPP_
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -10,15 +13,14 @@
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 
+namespace Connection
+{
 
-namespace Connection {
+    void initialize(std::string _baseUrl);
 
-    void initialize(const std::string _baseUrl);
-
-    Json::Value sendUpdateRequest(const std::string RFID, const std::string timestamp);
-    Json::Value sendRegisterRequest(const std::string RFID, const std::string studentID, const std::string timestamp);
+    Json::Value sendUpdateRequest(std::string RFID, std::string timestamp);
+    Json::Value sendRegisterRequest(std::string RFID, std::string studentID, std::string timestamp);
 
 };
 
-
-
+#endif

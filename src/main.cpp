@@ -4,26 +4,30 @@
 #include <string>
 #include <vector>
 
-#include <opencv2/core/core.hpp>
-#include <jsoncpp/json/json.h>
-
-// #include "connection/connection.hpp"
-// #include "frame/frame.hpp"
-
+#include "connection/connection.hpp"
+#include "frame/frame.hpp"
 #include "serial/serial.hpp"
 
 const std::string BASE_URL = "140.112.174.222:1484/mks_access";
 
-std::tm currTime;
+const std::string SERIAL_DEV = "/dev/ttyACM0";
+const int SERIAL_BOUD = 9600;
+const char SERIAL_START_SYMBOL = '\t';
+const char SERIAL_STOP_SYMBOL = '\n';
 
-bool updateCurrTime();
+std::tm currTime;
+std::thread currTimeUpdaterThread;
+
+void currTimeUpdater();
+bool currTimeUpdated();
 std::vector<std::string> getCurrTimeString();
 
+int main()
+{
 
-int main() {
-
-    // Connection::initialize(BASE_URL);
-    // Frame::initialize(0, 1920, 1080);
+    Connection::initialize(BASE_URL);
+    Frame::initialize(0, 1920, 1080);
+    Serial::initialize(SERIAL_DEV, SERIAL_BOUD);
 
     // std::string RFID = "A5280939";
     // std::string studentID = "B10901002";
@@ -35,33 +39,43 @@ int main() {
     // result = Connection::sendRegisterRequest(RFID, studentID, timestamp);
     // std::cout << result << std::endl;
 
-    // while (true) {
-    //     if (updateCurrTime()) {
-    //         std::vector<std::string> currTimeString = getCurrTimeString();
-    //         Frame::showTextStyle(currTimeString, cv::Scalar(255, 0, 0), cv::Scalar(255, 255, 0), 200, -1);
-    //     }
-    // }
+    currTimeUpdaterThread = std::thread(currTimeUpdater);
 
-    // Serial::initializeSerial("/dev/ttyACM0", 9600);
-    // Serial::setMessageWrapper('H', '\n');
-    // Serial::startScanner();
+    Serial::setMessageWrapper(SERIAL_START_SYMBOL, SERIAL_STOP_SYMBOL);
+    Serial::startScanner();
 
-    // while (true) {
-    //     if (Serial::available()) {
-    //         std::cout << Serial::getInput() << std::endl;
-    //     }
-    // }
+    while (true)
+    {
+        if (Serial::available())
+        {
+            std::cout << Serial::getInput() << std::endl;
+        }
+    }
 
     return 0;
 }
 
-bool updateCurrTime() {
+void currTimeUpdater()
+{
+    while (true)
+    {
+        if (currTimeUpdated())
+        {
+            std::vector<std::string> currTimeString = getCurrTimeString();
+            Frame::showTextStyle(currTimeString, cv::Scalar(255, 0, 0), cv::Scalar(255, 255, 0), 200, -1);
+        }
+    }
+}
+
+bool currTimeUpdated()
+{
 
     std::time_t t = std::time(0);
     t += 8 * (60 * 60);
     std::tm now = *std::localtime(&t);
 
-    if (currTime.tm_sec != now.tm_sec) {
+    if (currTime.tm_sec != now.tm_sec)
+    {
         currTime = now;
         return true;
     }
@@ -69,7 +83,8 @@ bool updateCurrTime() {
     return false;
 }
 
-std::vector<std::string> getCurrTimeString() {
+std::vector<std::string> getCurrTimeString()
+{
 
     std::string year = std::to_string(currTime.tm_year + 1900);
     std::string mon = std::to_string(currTime.tm_mon + 1);
