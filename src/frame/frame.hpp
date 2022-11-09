@@ -10,15 +10,20 @@
 #include <string>
 #include <ctime>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 namespace Frame
 {
 
     void initialize(int _fb, int _width, int _height);
 
-    void showText(std::string textVec, cv::Scalar fontColor, cv::Scalar bgColor, double scale, int thickness);
-    void showTextStyle(std::vector<std::string> text, cv::Scalar fontColor, cv::Scalar bgColor, double fontHeight, int thickness);
+    void showLine(std::string textVec, cv::Scalar fontColor, cv::Scalar bgColor, double scale, int thickness);
+    void showLines(std::vector<std::string> text, cv::Scalar fontColor, cv::Scalar bgColor, double fontHeight, int thickness);
 
+    void lock(int _lockPeriod);
+    void unlock();
+    void timer();
 }
 
 #endif

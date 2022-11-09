@@ -6,6 +6,11 @@ namespace Frame
     std::ofstream ofs;
     int width, height;
 
+    bool frameLocked;
+    int lockPeriod;
+    bool timerRunning;
+    std::thread timerThread;
+
     void initialize(int _fb, int _width, int _height)
     {
 
@@ -17,11 +22,74 @@ namespace Frame
         std::string fbDevice = "/dev/fb";
         fbDevice += std::to_string(_fb);
         ofs.open(fbDevice.c_str());
+
+        frameLocked = false;
+        timerRunning = false;
+        timerThread = std::thread(timer);
     }
 
-    void showTextStyle(std::vector<std::string> textVec, cv::Scalar fontColor, cv::Scalar bgColor, double fontHeight, int thickness)
+    void timer()
     {
+        std::chrono::_V2::system_clock::time_point startClock;
+        int milliseconds;
 
+        while (true)
+        {
+            if (frameLocked)
+            {
+                if (!timerRunning)
+                {
+                    timerRunning = true;
+                    startClock = std::chrono::high_resolution_clock::now();
+                }
+                else
+                {
+                    auto elapsedClock = std::chrono::high_resolution_clock::now() - startClock;
+                    milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsedClock).count();
+
+                    if (lockPeriod <= milliseconds)
+                    {
+                        frameLocked = false;
+                        timerRunning = false;
+                        std::cout << "Unlock after " << milliseconds << std::endl;
+                    }
+                }
+            }
+            else
+            {
+                if (timerRunning)
+                {
+                    timerRunning = false;
+                    // std::cout << "Forced unlock" << std::endl;
+                }
+            }
+        }
+    }
+
+    void lock(int _lockPeriod)
+    {
+        if (!frameLocked)
+        {
+            lockPeriod = _lockPeriod;
+            frameLocked = true;
+        }
+    }
+
+    void unlock()
+    {
+        if (frameLocked)
+        {
+            frameLocked = false;
+        }
+    }
+
+    void showLines(std::vector<std::string> textVec, cv::Scalar fontColor, cv::Scalar bgColor, double fontHeight, int thickness)
+    {
+        // std::cout << frameLocked << std::endl;
+        if (frameLocked)
+        {
+            return;
+        }
         cv::Ptr<cv::freetype::FreeType2> ft2;
         ft2 = cv::freetype::createFreeType2();
         ft2->loadFontData("./FiraCode.ttf", 0);
@@ -47,6 +115,10 @@ namespace Frame
             ft2->putText(image, text, origin, fontHeight, fontColor, thickness, 8, true);
         }
 
+        if (frameLocked)
+        {
+            return;
+        }
         cv::cvtColor(image, framebuffer_compat, cv::COLOR_RGB2BGR565);
         for (int y = 0; y < height; y++)
         {
@@ -55,9 +127,13 @@ namespace Frame
         }
     }
 
-    void showText(std::string text, cv::Scalar fontColor, cv::Scalar bgColor, double scale, int thickness)
+    void showLine(std::string text, cv::Scalar fontColor, cv::Scalar bgColor, double scale, int thickness)
     {
 
+        if (frameLocked)
+        {
+            return;
+        }
         int font_face = cv::FONT_HERSHEY_SIMPLEX;
         int baseline;
 
@@ -75,6 +151,10 @@ namespace Frame
         origin.y = image.rows / 2 + text_size.height / 2;
         cv::putText(image, text, origin, font_face, scale, fontColor, thickness, 8, 0);
 
+        if (frameLocked)
+        {
+            return;
+        }
         cv::cvtColor(image, framebuffer_compat, cv::COLOR_RGB2BGR565);
         for (int y = 0; y < height; y++)
         {
