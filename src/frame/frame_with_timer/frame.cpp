@@ -30,19 +30,63 @@ namespace Frame
 
         toLock = false;
         frameLocked = false;
+        timerRunning = false;
+        timerThread = std::thread(timer);
     }
 
-    void lock()
+    void timer()
+    {
+        std::chrono::_V2::system_clock::time_point startClock;
+        int milliseconds;
+
+        while (true)
+        {
+            if (frameLocked)
+            {
+                if (!timerRunning)
+                {
+                    timerRunning = true;
+                    startClock = std::chrono::high_resolution_clock::now();
+                }
+                else
+                {
+                    auto elapsedClock = std::chrono::high_resolution_clock::now() - startClock;
+                    milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsedClock).count();
+
+                    if (lockPeriod <= milliseconds)
+                    {
+                        frameLocked = false;
+                        timerRunning = false;
+                        std::cout << "Unlock after " << milliseconds << std::endl;
+                    }
+                }
+            }
+            else
+            {
+                if (timerRunning)
+                {
+                    timerRunning = false;
+                    std::cout << "Manually unlock" << std::endl;
+                }
+            }
+        }
+    }
+
+    void lock(int _lockPeriod)
     {
         if (!frameLocked && !toLock)
         {
+            lockPeriod = _lockPeriod;
             toLock = true;
         }
     }
 
     void unlock()
     {
-        frameLocked = false;
+        if (frameLocked)
+        {
+            frameLocked = false;
+        }
     }
 
     void printImage(cv::Mat &framebuffer_compat)

@@ -22,8 +22,9 @@ namespace Frame
 
     void showText(std::string &text, cv::Scalar fontColor, cv::Scalar bgColor, double fontHeight, int thickness);
 
-    void lock();
+    void lock(int _lockPeriod);
     void unlock();
+    void timer();
 }
 
 #endif
